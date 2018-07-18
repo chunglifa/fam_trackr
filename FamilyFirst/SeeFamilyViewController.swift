@@ -10,8 +10,8 @@ import UIKit
 import MapKit
 import CoreLocation
 
-
-class SeeFamilyViewController: UIViewController {
+class SeeFamilyViewController: UIViewController, CLLocationManagerDelegate {
+    let manager = CLLocationManager()
     
     var people:[String] = []
     var allColors = [UIColor.red, UIColor.orange, UIColor.yellow, UIColor.green, UIColor.blue, UIColor.purple, UIColor.black]
@@ -20,37 +20,43 @@ class SeeFamilyViewController: UIViewController {
         performSegue(withIdentifier: "AddSegue", sender: self)
     }
     @IBOutlet weak var tableView: UITableView!
+    // Importing Map
     @IBOutlet weak var mapView: MKMapView!
-    
-//    let noLocation = CLLocationCoordinate2D()
-//    let viewRegion = MKCoordinateRegionMakeWithDistance(noLocation, 200, 200)
-//    mapView.setRegion(viewRegion, animated: false)
-    
-    
     
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.delegate = self
         tableView.dataSource = self
-//        mapView.delegate = self as! MKMapViewDelegate
-//        mapView.showsUserLocation = true
-        
-        
+        manager.delegate = self
+        manager.desiredAccuracy = kCLLocationAccuracyBest
+        //Says we want the best accuracy
+        manager.requestAlwaysAuthorization()
+        //Have to request authorization for using users location
+        manager.startUpdatingLocation()
+        //Says "Hey manager, let's start updating
+        mapView.showsUserLocation = true
     }
-//    func locationManager(manager: CLLocationManager!, didUpdateLocations locations: [AnyObject]!) {
-//        let location = locations.last as CLLocation
-//
-//        let center = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
-//        let region = MKCoordinateRegion(center: center, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
-//
-//        self.map.setRegion(region, animated: true)
-//    }
+    
+    //======================================================================================
+    // HELPER FUNCTIONS
+    //======================================================================================
+    
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations location: [CLLocation]){
+        let location = location[0]
+        let span:MKCoordinateSpan = MKCoordinateSpanMake(0.01, 0.01)
+        let myLocation: CLLocationCoordinate2D = CLLocationCoordinate2DMake(location.coordinate.latitude, location.coordinate.longitude)
+        let region:MKCoordinateRegion = MKCoordinateRegionMake(myLocation, span)
+        mapView.setRegion(region, animated: true)
+        self.mapView.showsUserLocation = true
+        print(location)
+    }
 
 }
 
 extension SeeFamilyViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 5
+        return 3
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "memberCell", for: indexPath) as! customCell
@@ -60,4 +66,7 @@ extension SeeFamilyViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
 }
+
+
+
 
